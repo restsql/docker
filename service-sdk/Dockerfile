@@ -35,7 +35,7 @@ RUN sed -i'' 's/tools/tools\//' index.html
 # Configure web.xml reference to /opt/etc/restsql/restsql.properties
 RUN sed -i'' 's/\/opt\/restsql\/code\/restsql-test\/src\/resources\/properties\/restsql-mysql.properties/\/etc\/opt\/restsql\/restsql.properties/' WEB-INF/web.xml
 
-# Configure wide open CORS for access from the SDK on port 8090
+# Configure wide open CORS for access from anywhere
 RUN sed -i'' 's/<\/web-app>/<filter><filter-name>CorsFilter<\/filter-name><filter-class>org.apache.catalina.filters.CorsFilter<\/filter-class><\/filter><filter-mapping><filter-name>CorsFilter<\/filter-name><url-pattern>\/*<\/url-pattern><\/filter-mapping><\/web-app>/' WEB-INF/web.xml
 
 # Customize default restsql.properties, setting db password, hostname and sqlresources dir
