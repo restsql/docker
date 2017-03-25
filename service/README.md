@@ -1,6 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
--	[`0.8.11`, `latest` (0.8.11/Dockerfile*)](https://github.com/restsql/docker/blob/master/service/Dockerfile)
+-   [`0.8.12`, `latest` (0.8.12/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.12/service/Dockerfile)
+-   [`0.8.11` (0.8.11/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.11/service/Dockerfile)
 
 # What is restSQL?
 restSQL is an open-source, ultra-lightweight data access layer for HTTP clients. restSQL is a persistence framework or engine in the middle tier of a classic three tier architecture: client, application server and database. It may also be embedded in any middle-tier as a Java library.
@@ -54,7 +55,7 @@ This creates the container with the following characteristics:
 - Names it restsql from the latest image in repository restsql/service
 - Runs command ```catalina.sh run``` in daemon mode (background process)
 - Binds mysqld container into the service container, mapping it's IP address into the host name mysql. The port 3306 is also made available since this was exposed at mysqld container creation. See [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) for details.
-- Exposes service and sdk on port 8080. Check access via ```$ curl http://localhost:8080/restsql/```
+- Exposes service and sdk on port 8080 to host processes and binds to its external interfaces. Check access via ```$ curl http://localhost:8080/restsql/```
 - Exposes log files to local file system ```/var/log/restsql```. To check for errors: ```$ cat /var/log/reststql/internal.log```.
 
 If you are using another database, use instructions from Prerequisites.

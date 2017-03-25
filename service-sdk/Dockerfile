@@ -4,7 +4,7 @@ FROM tomcat:7-jre7
 
 MAINTAINER Mark Sawers <mark.sawers@restsql.org>
 
-ENV RESTSQL_VERSION=0.8.11
+ENV RESTSQL_VERSION=0.8.12
 ENV RESTSQL_SERVICE_WEBAPP_DIR=/usr/local/tomcat/webapps/restsql
 ENV RESTSQL_SDK_WEBAPP_DIR=/usr/local/tomcat/webapps/restsql-sdk
 ENV RESTSQL_CONF_DIR=/etc/opt/restsql
@@ -25,18 +25,9 @@ RUN mkdir -vp ${RESTSQL_SDK_WEBAPP_DIR}
 
 # Download and unpack the service webapp
 WORKDIR ${RESTSQL_SERVICE_WEBAPP_DIR}
-RUN curl http://restsql.org/dist/restsql-${RESTSQL_VERSION}.war > service.war
+RUN curl https://github.com/restsql/dist-archive/raw/master/restsql-${RESTSQL_VERSION}.war > service.war
 RUN jar -xvf service.war
 RUN rm service.war 
-
-# Fix bug in index.html
-RUN sed -i'' 's/tools/tools\//' index.html
-
-# Configure web.xml reference to /opt/etc/restsql/restsql.properties
-RUN sed -i'' 's/\/opt\/restsql\/code\/restsql-test\/src\/resources\/properties\/restsql-mysql.properties/\/etc\/opt\/restsql\/restsql.properties/' WEB-INF/web.xml
-
-# Configure wide open CORS for access from anywhere
-RUN sed -i'' 's/<\/web-app>/<filter><filter-name>CorsFilter<\/filter-name><filter-class>org.apache.catalina.filters.CorsFilter<\/filter-class><\/filter><filter-mapping><filter-name>CorsFilter<\/filter-name><url-pattern>\/*<\/url-pattern><\/filter-mapping><\/web-app>/' WEB-INF/web.xml
 
 # Customize default restsql.properties, setting db password, hostname and sqlresources dir
 RUN sed 's/localhost:3306/mysql:3306/'  WEB-INF/classes/resources/properties/default-restsql.properties > ${RESTSQL_PROPERTIES}
@@ -45,13 +36,9 @@ RUN sed -i'' 's/sqlresources.dir=\/opt\/restsql\/code\/restsql-test\/src\/resour
 
 # Download and unpack the sdk webapp
 WORKDIR ${RESTSQL_SDK_WEBAPP_DIR}
-RUN curl http://restsql.org/dist/restsql-sdk-${RESTSQL_VERSION}.war > sdk.war
+RUN curl https://github.com/restsql/dist-archive/raw/master/restsql-sdk-${RESTSQL_VERSION}.war > sdk.war
 RUN jar -xvf sdk.war
 RUN rm sdk.war
-
-# Configure API explorer
-RUN sed -i'' 's/resName = newResName/resName = "sdk." + newResName/' api-explorer/index.html
-RUN sed -i'' 's/<\/web-app>/<servlet><servlet-name>DirectoryListing<\/servlet-name><servlet-class>org.apache.catalina.servlets.DefaultServlet<\/servlet-class><init-param><param-name>listings<\/param-name><param-value>true<\/param-value><\/init-param><load-on-startup>1<\/load-on-startup><\/servlet><servlet-mapping><servlet-name>DirectoryListing<\/servlet-name><url-pattern>\/<\/url-pattern><\/servlet-mapping><\/web-app>/' WEB-INF/web.xml
 
 # Configure sqlresources
 RUN mkdir -p ${RESTSQL_SQLRESOURCES_DIR}

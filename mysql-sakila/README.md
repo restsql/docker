@@ -1,6 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
--	[`latest` (Dockerfile*)](https://github.com/restsql/docker/blob/master/mysql-sakila/Dockerfile)
+-   [`0.8.12`, `latest` (0.8.12/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.12/mysql-sakila/Dockerfile)
+-	[`0.8.11` (0.8.11/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.11/mysql-sakila/Dockerfile)
 
 # What is restSQL?
 restSQL is an open-source, ultra-lightweight data access layer for HTTP clients. restSQL is a persistence framework or engine in the middle tier of a classic three tier architecture: client, application server and database. It may also be embedded in any middle-tier as a Java library.
@@ -12,14 +13,14 @@ This image provides a ready to use database for the [restsql/service-sdk](https:
 
 # Image use
 ```console
-sudo docker run -d -p 3306:3306 --name mysqld restsql/mysql-sakila
+sudo docker run -d --expose 3306 --name mysqld restsql/mysql-sakila
 ```
 
 This creates a container with the following characteristics:
 
 - Creates a container with name mysqld from the latest in repository restsql/mysql-sakila
 - Runs entrypoint mysqld_safe --bind-address=0.0.0.0 in daemon mode (background process)
-- Exposes port 3306.
+- Exposes port 3306 to other containers, but not to host processes, nor does it bind to the host external interfaces
 
 You can check proper health via:
 ```console
