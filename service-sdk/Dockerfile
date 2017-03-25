@@ -25,7 +25,7 @@ RUN mkdir -vp ${RESTSQL_SDK_WEBAPP_DIR}
 
 # Download and unpack the service webapp
 WORKDIR ${RESTSQL_SERVICE_WEBAPP_DIR}
-RUN curl https://github.com/restsql/dist-archive/raw/master/restsql-${RESTSQL_VERSION}.war > service.war
+RUN curl https://raw.githubusercontent.com/restsql/dist-archive/master/restsql-${RESTSQL_VERSION}.war > service.war
 RUN jar -xvf service.war
 RUN rm service.war 
 
@@ -36,14 +36,14 @@ RUN sed -i'' 's/sqlresources.dir=\/opt\/restsql\/code\/restsql-test\/src\/resour
 
 # Download and unpack the sdk webapp
 WORKDIR ${RESTSQL_SDK_WEBAPP_DIR}
-RUN curl https://github.com/restsql/dist-archive/raw/master/restsql-sdk-${RESTSQL_VERSION}.war > sdk.war
+RUN curl https://raw.githubusercontent.com/restsql/dist-archive/master/restsql-sdk-${RESTSQL_VERSION}.war > sdk.war
 RUN jar -xvf sdk.war
 RUN rm sdk.war
 
 # Configure sqlresources
 RUN mkdir -p ${RESTSQL_SQLRESOURCES_DIR}
 WORKDIR ${RESTSQL_SQLRESOURCES_DIR}
-RUN ln -fs ${RESTSQL_SDK_WEBAPP_DIR}/examples/sqlresources sdk
+RUN ln -fs ${RESTSQL_SDK_WEBAPP_DIR}/examples/sqlresources/sdk sdk
 RUN ls -lt
 
 VOLUME "${RESTSQL_LOG_DIR}"

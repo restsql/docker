@@ -23,7 +23,7 @@ RUN mkdir -vp ${RESTSQL_SERVICE_WEBAPP_DIR}
 
 # Download and unpack the service webapp
 WORKDIR ${RESTSQL_SERVICE_WEBAPP_DIR}
-RUN curl https://github.com/restsql/dist-archive/raw/master/restsql-${RESTSQL_VERSION}.war > service.war
+RUN curl https://raw.githubusercontent.com/restsql/dist-archive/master/restsql-${RESTSQL_VERSION}.war > service.war
 RUN jar -xvf service.war
 RUN rm service.war 
 
