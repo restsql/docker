@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Exit if any command returns non-zero (error)
+set -e
+
+# Constants
+TOMCAT_LOG_DIR=/usr/local/tomcat/logs
+SCRIPT_LOG_DIR=/var/log/restsql
+LOG_FILE_PATTERN=localhost_access_log.*
+
+(
+echo "starting at `date`"
+
+if [ -z "$TOMCAT_LOG_RETENTION_DAYS" ]; then
+   echo "missing env variable TOMCAT_LOG_RETENTION_DAYS"
+   exit 1
+fi
+
+# Delete logs older than retention days
+findCommand="find $TOMCAT_LOG_DIR -name $LOG_FILE_PATTERN -type f -mtime +$TOMCAT_LOG_RETENTION_DAYS"
+echo $findCommand
+$findCommand
+deleteCount=`$findCommand | wc -l`
+$findCommand | xargs rm -f
+
+echo "deleted $deleteCount logs from $TOMCAT_LOG_DIR"
+
+) 2>&1 | tee $SCRIPT_LOG_DIR/logclean.status

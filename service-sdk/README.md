@@ -1,6 +1,7 @@
 # Supported tags and respective `Dockerfile` links
 
--   [`0.8.12`, `latest` (0.8.12/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.12/service-sdk/Dockerfile)
+-   [`0.8.13`, `latest` (0.8.13/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.13/service-sdk/Dockerfile)
+-   [`0.8.12` (0.8.12/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.12/service-sdk/Dockerfile)
 -   [`0.8.11` (0.8.11/Dockerfile*)](https://github.com/restsql/docker/blob/0.8.11/service-sdk/Dockerfile)
 
 # What is restSQL?
@@ -9,76 +10,149 @@ restSQL is an open-source, ultra-lightweight data access layer for HTTP clients.
 See [restsql.org](http://restsql.org) for more on concepts, architecture, API details, deployment instructions and project information.
 
 # Image overview
-This image provides the restSQL service and sdk running on tomcat 7 and jdk 7 on debian. It exposes HTTP on port 8080 at /restsql for the web service and admin console, and /restsql-sdk for the sdk.
+This image provides the restSQL service and sdk running on tomcat 7 on a minimized linux (7.0.91-jre7-alpine). It exposes HTTP on port 8080 at /restsql for the web service and admin console, and /restsql-sdk for the sdk documentation and API explorer. See [restsql/service-sdk](https://hub.docker.com/r/restsql/service/) if you would like it without the SDK.
 
-It is designed to work with the MySQL database packaged as the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) docker container but you can use any [supported database](http://restsql.org/doc/Architecture.html).
+If you are just evaluating the framework, it is easiest to use the MySQL database packaged as the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) docker container. However, you can use any [supported database](http://restsql.org/doc/Architecture.html), containerized or not.
+
+This container plus the mysql-sakila is backing our [live sandboxed service](http://restsql.org/restsql). All of the sdk is also hosted at [restsql.org](http://restsql.org). You are welcome to explore both.
 
 # Prerequisites
-A supported database must be running and accessible remotely *before* starting the restsql container. By default, this image is paired with the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/), which contains the [sakila](https://dev.mysql.com/doc/sakila/en/) database (with restsql-test extensions). The restql image expects the database to be available at host 'mysql', port 3306 and a root password 'sakila'. See the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) for instructions on how to start it.
+A [supported database](http://restsql.org/doc/Architecture.html) must be running and accessible to the reststql container *before* starting the restsql container, otherwise it will not start properly.
 
-If you are running MySQL in another container or standalone, you can customize the restsql/service-sdk container as follows:
+## Use the project's containerized database
+By default, this image is paired with the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/), which contains an extended [sakila](https://dev.mysql.com/doc/sakila/en/) database. The restql image expects the database to be available at host 'mysql', port 3306 and a root password 'sakila'. However you do not need to configure anything special. All you need to do is start the restsql container with the `--link mysqld:mysql` to connect to the mysql-sakila containerized database.
 
-1. Use the docker run attribute --add-host="Host:IP" for example --add-host="mysql:192.168.1.13". This adds the host name mysql at 192.168.1.13 into the container's /etc/hosts.
-2. Ensure port 3306 is accessible to the docker host
-3. Update the access user name/password in restsql.properties. This is at /etc/opt/restsql/restsql.properties in the container file system.
+See the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) for instructions on how to start it.
 
-    a. Start the restsql/service-sdk container
+If you're just getting started, this may be the path of least resistance. It also enables you to more easily use the SDK's API Explorer, which requires some of the sakila tables.
 
-    b. Copy the current properties to the local file system
+## Use your database
+You'll be creating the restsql container with a docker volume mapping the container's configuration path `/etc/opt/restsql` to your host's configuration path. Let's say that is `/home/tripper/restsql-conf`. It will have a file `restsql.properties` and an empty directory called `sqlresources`. The argument `--volume /home/tripper/restsql-conf:/etc/opt/restsql` is added to the docker run to override the default config.
 
-		$ docker cp restsql:/etc/opt/restsql/restsql.properties .
+Copy the default restsql properties file from [github](https://raw.githubusercontent.com/restsql/restsql-sdk/master/WebContent/defaults/properties/default-restsql.properties) to your restsql conf dir. Create an empty dir `sqlresources`. Using the example above, it will look like:
 
-    c. Edit the database.user and database.password entries
+    /home/tripper/restsql-conf
+	    /sqlresources
+		restsql.properties
 
-    d. Copy the properties back to the container
+Follow instructions below to configure for your database.
 
-		$ docker cp restsql.properties restsql:/etc/opt/restsql
+### MySQL config
+Modify the properties `database.url`, `database.user` and `database.password` in the restsql.properties.
 
-	e. Restart the container
+Your restsql.properties database section might look like:
 
+    database.driverClassName=com.mysql.jdbc.Driver
+	database.url=jdbc:mysql://dev-mysql1.example.com:3306?noDatetimeStringSync=true&zeroDateTimeBehavior=convertToNull
+    database.user=mysql
+    database.password=***
 
-If you are running another database type, e.g. PostgreSQL:
+## Use your PostgreSQL database
+Modify the `database.url`, `database.user`, `database.password` as well as the `database.driverClassName` in restsql.properties.
 
-1. Follow the above procedures
-2. Additionally modify the database.driverClassName and database.url in restsql.properties
+Your restsql.properties database section might look like:
 
-See [restSQL configuration](http://restsql.org/doc/Deployment.html) for more detail on restsql.properties customization.
+    database.driverClassName=org.postgresql.Driver
+    database.url=jdbc:postgresql://dev.postgresql.example.com:5432/dev_12
+    database.user=postgres
+    database.password=***
 
-If you would like to run the SDK's API Explorer, you need the sakila database. You can use the [restsql/mysql](https://github.com/restsql/restsql-sdk/tree/master/WebContent/database/mysql) or [restsql/postgresql](https://github.com/restsql/restsql-sdk/tree/master/WebContent/database/postgresql).
+### Using the SDK's API Explorer with your database
+If you would like to run the SDK's API Explorer, you need the sakila database. You can use the [github-hosted scripts](https://github.com/restsql/restsql-sdk/tree/master/WebContent/database) to create it in your database instance.
+
+You'll also need some configuration files. Download the [github-hosted sql resources](https://raw.githubusercontent.com/restsql/restsql-sdk/master/WebContent/examples/sqlresources.zip) and unzip it in the the sql conf dir. In the running example, this will look like:
+
+    /home/tripper/restsql-conf
+	    /sqlresources
+		    /sdk
+			    Country.xml
+			    ...
+	    restsql.properties
+
+But you can avoid all this hassle by using our [live sandboxed API Explorer](http://restsql.org/api-explorer/index.html)
 
 # Image use
+Assuming you've followed the prerequesites, we're ready to launch.
+
+## With the project's containerized database
 ```console
 $ docker run -d --link mysqld:mysql -p 8080:8080 --name restsql --volume /var/log/restsql:/var/log/restsql restsql/service-sdk
 ```
 This creates the container with the following characteristics:
-
-- Names it restsql from the latest image in repository restsql/service-sdk
-- Runs command ```catalina.sh run``` in daemon mode (background process)
+- Uses the latest image in repository restsql/service-sdk
+- Names it restsql
+- Runs tomcat in daemon mode (background process)
+- Exposes service and sdk on port 8080 to host processes and binds to its external interfaces.
+- Exposes log files to local file system `/var/log/restsql`.
 - Binds mysqld container into the service-sdk container, mapping it's IP address into the host name mysql. The port 3306 is also made available since this was exposed at mysqld container creation. See [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) for details.
-- Exposes service and sdk on port 8080 to host processes and binds to its external interfaces. Check access via ```$ curl http://localhost:8080/restsql/```
-- Exposes log files to local file system ```/var/log/restsql```. To check for errors: ```$ cat /var/log/reststql/internal.log```.
+- Uses the container's restsql configuration at `/etc/opt/restsql`
 
-If you are using another database, use instructions from Prerequisites.
+If you want to productionize this, it is best to map the restsql configuration to the host's file system via a volume. This makes it easier to change restsql.properties and to edit/add/remove sql resource files. Without the volume, to change config, you'll need to use [docker exec](https://docs.docker.com/engine/reference/commandline/exec/) to open a shell and vi files, or [docker cp](https://docs.docker.com/engine/reference/commandline/cp/) to get files from the container, edit them on the host, and then write them back to the container. Furthermore, an unmapped config is subject to loss by human error. When the container is removed, all your config is also lost.
+
+Use the docker run option `--volume host-path:container-path`. For example:
+```console
+$ docker run -d --link mysqld:mysql -p 8080:8080 --name restsql --volume /var/log/restsql:/var/log/restsql --volume /home/tripper/restsql-conf:/etc/opt/restsql restsql/service
+```
+
+## With your own MySQL database
+Instead of the `--link` option use the docker run option `--add-host="Host:IP"`. Supposing your `database.url` restsql property uses the hostname dev-mysql1.example.com, this argument looks like: `--add-host="dev-mysql1.example.com:192.168.1.13"`. This adds the host name dev-mysql1.example.com at 192.168.1.13 into the container's `/etc/hosts`. Note that if you are running the db on the same host as the restsql container, you still can't use localhost. 127.0.0.1 refers to the localhost of the container. You also cannot put in two IP addresses. The option only accepts host-name:ip-address.
+
+Here's an example full docker run command with the above host and ip address, and as mentioned in the Prerequisites the mapped volume for the configuration.
+
+```console
+$ docker run -d --add-host="dev-mysql1.example.com:192.168.1.13" -p 8080:8080 --name restsql --volume /var/log/restsql:/var/log/restsql --volume /home/tripper/restsql-conf:/etc/opt/restsql restsql/service-sdk
+```
+
+The database port is configured in the restsql.properties. See the Prerequisites.
+
+## With your own PostgreSQL database
+As above, you'll be using the `--add-host=your-postgresql-hostname:ip-address` and the `--volume /your/configuration/dir:/etc/opt/restsql`. If your postgre host was dev.postgresql.example.com on 192.168.25.11, then the full docker command is:
+
+```console
+$ docker run -d --add-host="dev.postgresql.example.com:192.168.25.11" -p 8080:8080 --name restsql --volume /var/log/restsql:/var/log/restsql --volume /home/tripper/restsql-conf:/etc/opt/restsql restsql/service-sdk
+```
+
+The database port is configured in the restsql.properties. See the Prerequisites.
+
+## Validation
+Validate the service by accessing the console: curl or open your browser to `http://host:port/restsql/`.
+
+If that doesn't open:
+* check for errors in the tomcat catalina logs by executing `docker logs restsql`
+* check for errors in the log `/var/log/reststql/internal.log`.
+
+If you need to go deeper and have a look around, open a shell in the container like this:
+```console
+$docker exec -it restsql /bin/sh
+```
+
+If you want to copy files out from or into the container, use [docker cp](https://docs.docker.com/engine/reference/commandline/cp/).
+
+Validate the sdk by opening in a browser `http://host:port/restsql-sdk/`.
+
+# For more help
+See [restSQL Deployment](http://restsql.org/doc/Deployment.html) for more detail on restsql.properties customization.
 
 # Next steps
-Use the restsql home page at http://host:port/restsql/ for helpful links. Explore the SDK resources at http://host:port/restsql/res/.
+Use the restsql home page at http://host:port/restsql/ for helpful links. You may want to auto-create resource definitions from any available schema from the tools link (http://host:port/restsql/tools/). If you are using restsql/mysql-sakila you can auto-create resources from all tables in the sakila schema.
 
-You may want to auto-create resource definitions from any available schema from the tools link (http://host:port/restsql/tools/). If you are using restsql/mysql-sakila you can auto-create resources from all tables in the sakila schema.
+Explore restSQL [Concepts](http://restsql.org/doc/Concepts.html), [Architecture](http://restsql.org/doc/Architecture.html) and the [HTTP API reference](http://restsql.org/doc/api/index.html).
 
-Explore the HTTP API interactively using the SDK's API Explorer (http://host:port/restsql-sdk/api-explorer/).
+# Logging
+See [Logging](http://restsql.org/doc/Logging.html) for restsql logging. All four of restSQL's logs are rotated after 1MB until there are 9 backups, and then older ones are deleted. The example run commands above recommend mapping the host's /var/log/restsql to the container's for easier access.
 
-Explore the restSQL SDK documentation (http://host:port/restsql-sdk/) starting with Concepts, Architecture and the HTTP API reference.
-
-# License
-restSQL is licensed under the standard [MIT license](http://restsql.org/doc/License.html).
+Tomcat access logs are not mapped to the host file system, but they could be if desired. These live in /usr/local/tomcat/logs. These are rotated daily by Tomcat. A cron job runs daily at 2am UTC that deletes those older than three days. You can change this retention policy by passing in an environment variable with the number of days. For example to set to 14 days retention, add the option `--env TOMCAT_LOG_RETENTION_DAYS=14` to docker run.
 
 # Supported Docker versions
-This image was tested on Docker version 1.12.6.
+This image was tested on Docker version 18.06.
 
 Please see [the Docker installation documentation](https://docs.docker.com/installation/) for details on how to upgrade your Docker daemon.
 
 # Issues
 If you have any problems with or questions about this image or restSQL, please contact us through a [GitHub issue](http://github.com/restsql/restsql/issues) or see the [Support Overview](http://restsql.org/doc/Support.html).
+
+# License
+restSQL is licensed under the standard [MIT license](http://restsql.org/doc/License.html).
 
 # Contributing
 You are invited to contribute new features, fixes or updates, large or small, via github pull requests. See [restsql.org/Roadmap](http://restsql.org/doc/Roadmap.html) for more information.

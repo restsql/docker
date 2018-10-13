@@ -1,1 +1,3 @@
 **/.DS_Store
+service/usr/local/tomcat/webapps/*
+service-sdk/usr/local/tomcat/webapps/*

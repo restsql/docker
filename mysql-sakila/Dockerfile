@@ -2,7 +2,7 @@
 
 FROM  ubuntu:latest
 
-MAINTAINER Mark Sawers <mark.sawers@restsql.org>
+MAINTAINER restSQL Project Contributors <support@restsql.org>
 
 # Include our scripts
 ADD ./scripts /etc/mysql/sakila
