@@ -7,6 +7,7 @@ set -e
 TOMCAT_LOG_DIR=/usr/local/tomcat/logs
 SCRIPT_LOG_DIR=/var/log/restsql
 LOG_FILE_PATTERN=localhost_access_log.*
+DEFAULT_TOMCAT_LOG_RETENTION_DAYS=3
 
 (
 echo "starting at `date`"
@@ -16,8 +17,15 @@ if [ -z "$TOMCAT_LOG_RETENTION_DAYS" ]; then
    exit 1
 fi
 
+mtime=$((TOMCAT_LOG_RETENTION_DAYS - 1))
+if [ "$mtime" -lt 0 ]; then
+   echo "env variable TOMCAT_LOG_RETENTION_DAYS is $TOMCAT_LOG_RETENTION_DAYS but cannot be less than 1"
+   echo "resetting to default $DEFAULT_TOMCAT_LOG_RETENTION_DAYS"
+   mtime=2
+fi
+
 # Delete logs older than retention days
-findCommand="find $TOMCAT_LOG_DIR -name $LOG_FILE_PATTERN -type f -mtime +$TOMCAT_LOG_RETENTION_DAYS"
+findCommand="find $TOMCAT_LOG_DIR -name $LOG_FILE_PATTERN -type f -mtime +$mtime"
 echo $findCommand
 $findCommand
 deleteCount=`$findCommand | wc -l`
