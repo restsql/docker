@@ -10,7 +10,7 @@ restSQL is an open-source, ultra-lightweight data access layer for HTTP clients.
 See [restsql.org](http://restsql.org) for more on concepts, architecture, API details, deployment instructions and project information.
 
 # Image overview
-This image provides the restSQL service and sdk running on tomcat 7 on a minimized linux (7.0.91-jre7-alpine). It exposes HTTP on port 8080 at /restsql for the web service and admin console, and /restsql-sdk for the sdk documentation and API explorer. See [restsql/service-sdk](https://hub.docker.com/r/restsql/service/) if you would like it without the SDK.
+This image provides the restSQL service and sdk running on tomcat 7 on a minimized linux (7.0.91-jre7-alpine). It exposes HTTP on port 8080 at /restsql for the web service and admin console, and /restsql-sdk for the sdk documentation and API explorer. See [restsql/service](https://hub.docker.com/r/restsql/service/) if you would like it without the SDK.
 
 If you are just evaluating the framework, it is easiest to use the MySQL database packaged as the [restsql/mysql-sakila](https://hub.docker.com/r/restsql/mysql-sakila/) docker container. However, you can use any [supported database](http://restsql.org/doc/Architecture.html), containerized or not.
 
